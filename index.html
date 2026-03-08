@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TikTok Downloader | 3moorygamng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://omg10.com/4/10699688" async></script>
+    <style>
+        :root {
+            --pink: #fe2c55;
+            --cyan: #25f4ee;
+            --bg: #0a0a0a;
+            --card: #141414;
+            --border: #222;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--pink), #ff6b35);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 0 30px rgba(254,44,85,0.4);
+        }
+
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--pink), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p { font-size: 13px; color: #555; }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .input-label { font-size: 14px; color: #888; margin-bottom: 10px; display: block; }
+
+        .input-wrap { display: flex; gap: 10px; }
+
+        .url-input {
+            flex: 1;
+            background: #1e1e1e;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            color: white;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-family: 'Cairo', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .url-input:focus { border-color: var(--pink); }
+        .url-input::placeholder { color: #444; }
+
+        .paste-btn {
+            background: #1e1e1e;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            color: #888;
+            padding: 14px 16px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .paste-btn:active { background: #2a2a2a; color: white; }
+
+        /* tooltip لصق */
+        .paste-tip {
+            position: absolute;
+            bottom: -32px;
+            right: 0;
+            background: #333;
+            color: white;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            display: none;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .download-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--pink), #c8002a);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.1s;
+            box-shadow: 0 4px 20px rgba(254,44,85,0.3);
+        }
+
+        .download-btn:active { opacity: 0.85; transform: scale(0.98); }
+        .download-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        #result {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 20px;
+        }
+
+        .loading-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(255,255,255,0.08);
+            border-top-color: var(--pink);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: #888; font-size: 15px; }
+
+        /* بطاقة النتيجة */
+        .video-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* مشغل الفيديو */
+        .video-player-wrap {
+            position: relative;
+            width: 100%;
+            background: #000;
+        }
+
+        .video-player {
+            width: 100%;
+            max-height: 400px;
+            display: block;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* زر التشغيل المخصص */
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            background: rgba(254,44,85,0.85);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        .play-overlay svg { width: 28px; fill: white; margin-right: -4px; }
+        .play-overlay.hidden { opacity: 0; pointer-events: none; }
+
+        .video-info { padding: 16px; }
+
+        .video-author { font-size: 13px; color: var(--cyan); margin-bottom: 6px; }
+
+        .video-desc {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .dl-buttons { display: flex; flex-direction: column; gap: 10px; }
+
+        .dl-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 14px;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .dl-btn:active { opacity: 0.8; transform: scale(0.98); }
+
+        .dl-video {
+            background: linear-gradient(135deg, var(--pink), #c8002a);
+            color: white;
+            box-shadow: 0 4px 15px rgba(254,44,85,0.25);
+        }
+
+        .dl-video-hd {
+            background: linear-gradient(135deg, #ff8c00, #c85a00);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255,140,0,0.25);
+        }
+
+        .btn-badge {
+            background: rgba(255,255,255,0.25);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .dl-audio {
+            background: linear-gradient(135deg, var(--cyan), #00b8b3);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(37,244,238,0.2);
+        }
+
+        .error-card {
+            background: #1a0a0a;
+            border: 1px solid #3a1515;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .error-icon { font-size: 36px; margin-bottom: 10px; }
+
+        .footer { margin-top: 40px; color: #333; font-size: 12px; text-align: center; }
+        .footer span { color: var(--pink); }
+    </style>
+</head>
+<body>
+
+    <div class="logo">
+        <div class="logo-icon">⬇️</div>
+        <h1>TikTok Downloader</h1>
+        <p>حمّل الفيديوهات بدون علامة مائية</p>
+    </div>
+
+    <div class="card">
+        <span class="input-label">الصق رابط الفيديو هنا 👇</span>
+        <div class="input-wrap">
+            <input
+                type="url"
+                id="urlInput"
+                class="url-input"
+                placeholder="https://www.tiktok.com/..."
+                onkeydown="if(event.key==='Enter') startDownload()"
+            >
+            <button class="paste-btn" id="pasteBtn" onclick="pasteFromClipboard()" title="لصق">
+                📋
+                <span class="paste-tip" id="pasteTip"></span>
+            </button>
+        </div>
+        <button class="download-btn" id="mainBtn" onclick="startDownload()">
+            ⬇️ جلب الفيديو
+        </button>
+    </div>
+
+    <div id="result"></div>
+
+    <div class="footer">صنع بـ <span>♥</span> بواسطة 3moorygamng</div>
+
+<script>
+    // ===== زر اللصق - يدعم كل الطرق =====
+    function pasteFromClipboard() {
+        var input = document.getElementById('urlInput');
+
+        // الطريقة 1: Clipboard API الحديثة
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText()
+                .then(function(text) {
+                    input.value = text;
+                    showTip('✅ تم اللصق');
+                })
+                .catch(function() {
+                    // إذا رُفض الإذن، نركز على الحقل ليلصق يدوياً
+                    input.focus();
+                    showTip('اضغط مطولاً للصق');
+                });
+        } else {
+            // الطريقة 2: execCommand (أقدم)
+            input.focus();
+            try {
+                document.execCommand('paste');
+                showTip('✅ تم اللصق');
+            } catch(e) {
+                showTip('اضغط مطولاً للصق');
+            }
+        }
+    }
+
+    function showTip(msg) {
+        var tip = document.getElementById('pasteTip');
+        tip.textContent = msg;
+        tip.style.display = 'block';
+        setTimeout(function() { tip.style.display = 'none'; }, 2000);
+    }
+
+    // ===== جلب الفيديو =====
+    function startDownload() {
+        var url = document.getElementById('urlInput').value.trim();
+        if (!url) { showError('⚠️', 'الصق رابط الفيديو أولاً'); return; }
+        if (url.indexOf('tiktok.com') === -1) { showError('⚠️', 'الرابط غير صحيح\nتأكد أنه رابط من تيك توك'); return; }
+
+        showLoading();
+        document.getElementById('mainBtn').disabled = true;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://www.tikwm.com/api/', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.timeout = 20000;
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== 4) return;
+            document.getElementById('mainBtn').disabled = false;
+
+            if (xhr.status >= 200 && xhr.status < 300 && xhr.responseText) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.code === 0 && data.data) {
+                        showResult(data.data);
+                    } else {
+                        showError('😕', 'تعذّر جلب الفيديو\nتأكد من صحة الرابط');
+                    }
+                } catch(e) { showError('❌', 'خطأ في معالجة البيانات'); }
+            } else {
+                // fallback GET
+                fetchGet(url);
+            }
+        };
+
+        xhr.ontimeout = function() {
+            document.getElementById('mainBtn').disabled = false;
+            showError('⏱️', 'انتهت المهلة\nحاول مجدداً');
+        };
+        xhr.onerror = function() {
+            document.getElementById('mainBtn').disabled = false;
+            fetchGet(url);
+        };
+        xhr.send('url=' + encodeURIComponent(url));
+    }
+
+    function fetchGet(url) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://www.tikwm.com/api/?url=' + encodeURIComponent(url), true);
+        xhr.timeout = 20000;
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== 4) return;
+            document.getElementById('mainBtn').disabled = false;
+
+            if (xhr.status >= 200 && xhr.status < 300 && xhr.responseText) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.code === 0 && data.data) {
+                        showResult(data.data);
+                    } else {
+                        showError('😕', 'تعذّر جلب الفيديو\nتأكد من صحة الرابط');
+                    }
+                } catch(e) { showError('❌', 'خطأ في معالجة البيانات'); }
+            } else {
+                showError('🔌', 'فشل الاتصال\nتحقق من الإنترنت وحاول مجدداً');
+            }
+        };
+
+        xhr.ontimeout = function() { showError('⏱️', 'انتهت المهلة\nحاول مجدداً'); };
+        xhr.onerror = function() { showError('🔌', 'فشل الاتصال\nتحقق من الإنترنت'); };
+        xhr.send();
+    }
+
+    function showLoading() {
+        document.getElementById('result').innerHTML =
+            '<div class="loading-card">' +
+            '<div class="spinner"></div>' +
+            '<div class="loading-text">جاري جلب بيانات الفيديو...</div>' +
+            '</div>';
+    }
+
+    function showResult(v) {
+        var author = '';
+        if (v.author) {
+            author = v.author.nickname || ('@' + v.author.unique_id) || '';
+        }
+        var desc = v.title || v.desc || '';
+        var playUrl = v.play || '';           // بدون علامة مائية
+        var hdUrl   = v.hdplay || v.wmplay || v.play || ''; // HD (قد يحتوي علامة مائية)
+        var musicUrl = v.music || '';
+
+        var html = '<div class="video-card">';
+
+        // مشغل الفيديو
+        if (playUrl) {
+            html +=
+                '<div class="video-player-wrap" id="playerWrap">' +
+                '<video class="video-player" id="videoPlayer" playsinline webkit-playsinline preload="metadata" poster="' + (v.cover || '') + '">' +
+                '<source src="' + playUrl + '" type="video/mp4">' +
+                '</video>' +
+                '<div class="play-overlay" id="playOverlay" onclick="togglePlay()">' +
+                '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' +
+                '</div>' +
+                '</div>';
+        }
+
+        html += '<div class="video-info">';
+        if (author) html += '<div class="video-author">👤 ' + esc(author) + '</div>';
+        if (desc) html += '<div class="video-desc">' + esc(desc) + '</div>';
+
+        html += '<div class="dl-buttons">';
+
+        // زر HD - يفتح إعلان ثم يحمّل
+        if (hdUrl) {
+            html += '<button class="dl-btn dl-video-hd" onclick="hdDownload(\'' + hdUrl + '\')">' +
+                    '🎬 تحميل HD <span class="btn-badge">مشاهدة إعلان</span></button>';
+        }
+
+        // زر عادي (بدون علامة مائية)
+        if (playUrl) {
+            html += '<a class="dl-btn dl-video" href="' + playUrl + '" target="_blank">' +
+                    '🎬 تحميل عادي <span class="btn-badge">بدون علامة</span></a>';
+        }
+
+        // زر الصوت
+        if (musicUrl) {
+            html += '<a class="dl-btn dl-audio" href="' + musicUrl + '" target="_blank">🎵 تحميل صوت (MP3)</a>';
+        }
+
+        html += '</div></div></div>';
+
+        document.getElementById('result').innerHTML = html;
+
+        // ربط أحداث الفيديو
+        var vid = document.getElementById('videoPlayer');
+        if (vid) {
+            vid.addEventListener('play', function() {
+                var overlay = document.getElementById('playOverlay');
+                if (overlay) overlay.classList.add('hidden');
+            });
+            vid.addEventListener('pause', function() {
+                var overlay = document.getElementById('playOverlay');
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                    overlay.innerHTML = '<svg viewBox="0 0 24 24" style="width:28px;fill:white"><path d="M8 5v14l11-7z"/></svg>';
+                }
+            });
+            vid.addEventListener('ended', function() {
+                var overlay = document.getElementById('playOverlay');
+                if (overlay) overlay.classList.remove('hidden');
+            });
+        }
+    }
+
+    function togglePlay() {
+        var vid = document.getElementById('videoPlayer');
+        if (!vid) return;
+        if (vid.paused) {
+            vid.play().catch(function() {});
+        } else {
+            vid.pause();
+        }
+    }
+
+    // زر HD - يفتح إعلان ثم بعد 5 ثواني يحمّل
+    function hdDownload(url) {
+        // فتح الإعلان في تاب جديد - نستخدم رابط https مباشر
+        var adUrl = 'https://omg10.com/4/10699688';
+        var adWin = window.open(adUrl, '_blank', 'noopener');
+
+        // إذا فشل الفتح، نجرب location.href
+        if (!adWin || adWin.closed) {
+            var a = document.createElement('a');
+            a.href = adUrl;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // عرض عداد للمستخدم
+        var btn = document.querySelector('.dl-video-hd');
+        var original = btn.innerHTML;
+        var count = 5;
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.innerHTML = '⏳ ' + count + ' ثواني...';
+
+        var timer = setInterval(function() {
+            count--;
+            if (count <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = original;
+                // تحميل الفيديو
+                var a2 = document.createElement('a');
+                a2.href = url;
+                a2.target = '_blank';
+                document.body.appendChild(a2);
+                a2.click();
+                document.body.removeChild(a2);
+            } else {
+                btn.innerHTML = '⏳ ' + count + ' ثواني...';
+            }
+        }, 1000);
+    }
+
+    function showError(icon, msg) {
+        document.getElementById('result').innerHTML =
+            '<div class="error-card">' +
+            '<div class="error-icon">' + icon + '</div>' +
+            '<div>' + msg.replace(/\n/g, '<br>') + '</div>' +
+            '</div>';
+    }
+
+    function esc(str) {
+        return String(str)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;');
+    }
+</script>
+</body>
+</html>
